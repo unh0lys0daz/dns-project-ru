@@ -32,7 +32,7 @@ class Resolver:
         self.ttl = ttl
         self.rd = rd
 
-    def gethostbyname(self, hostname, dnsserv):
+    def gethostbyname(self, hostname, dnsserv='192.112.36.4'):
         """Translate a host name to IPv4 address.
 
         Currently this method contains an example. You will have to replace
@@ -62,7 +62,7 @@ class Resolver:
                 return hostname, cnames, ipaddrlist
             elif cnames:
                 for cname in cnames:
-                    (host, aliases, ipaddrl) = self.gethostbyname(cname)
+                    (host, aliases, ipaddrl) = self.gethostbyname(cname, dnsserv)
                     if ipaddrl:
                         return (host, aliases, ipaddrl)
                     elif aliases:
@@ -85,19 +85,30 @@ class Resolver:
         # Receive response
         data = sock.recv(512)
         response = Message.from_bytes(data)
-
         # Get data
-        aliaslist = []
+        aliaslist = cnames
         ipaddrlist = []
+        dnslist = []
         for answer in response.answers:
-            if answer.type_ == Type.A:
+            if answer.name == hostname and answer.type_ == Type.A:
                 ipaddrlist.append(answer.rdata.address)
             if answer.type_ == Type.CNAME:
                 aliaslist.append(hostname)
                 hostname = str(answer.rdata.cname)
             if answer.type == Type.NS:
+                dnslist = dnslist + answer.rdata.nsdname
+
         if ipaddrlist:
             return hostname, aliaslist, ipaddrlist
         if aliaslist:
             for name in aliaslist:
+                (host, aliases, ipaddrl) = self.gethostbyname(cname, dnsserv)
+
+                if ipaddrl:
+                    return (host, aliases, ipaddrl)
+                elif aliases:
+                    aliaslist = aliaslist + aliases
+       if dnslist:
+           for ns in dnslist:
+               self.gethostbyname(
 
