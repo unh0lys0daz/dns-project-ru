@@ -72,7 +72,7 @@ class Resolver:
         header = Header(9001, 0, 1, 0, 0, 0)
         header.qr = 0
         header.opcode = 0
-        header.rd = 0
+        header.rd = 1
         query = Message(header, [question])
         sock.sendto(query.to_bytes(), (dnsserv, 53))
 
@@ -82,10 +82,38 @@ class Resolver:
         print("Number of answers: " +str(len(response.answers)))
         print("Number of authorities: " + str(len(response.authorities)))
         print("Number of additionals: " + str(len(response.additionals)))
+
         # Get data
         aliaslist = cnames
         ipaddrlist = []
         dnslist = []
+        
+        while response.answers:
+            for answer in response.answers:
+                if answer.type_ == Type.A:
+                    ipaddrlist.append(answer.rdata.address)
+                if answer.type_ == Type.CNAME:
+                    aliaslist.append(answer.rdata.cname)
+                if answer.type == Type.NS:
+                    dnslist.append(answer.rdata.nsdname)
+            if ipaddrlist:
+                return hostname, aliaslist, ipaddrlist
+            elif aliaslist:
+                question = Question(Name(aliaslist[0]), Type.A, Class.IN)
+                query = Message(header, [question])
+                sock.sendto(query.to_bytes(), (dnsserv, 53))
+                data = sock.recv(2048)
+                response = Message.from_bytes(data)
+            elif dnslist:
+                dnsserv = dnslist.pop()
+                sock.sendto(query.to_bytes(), (dnsserv, 53))
+                data = sock.recv(2048)
+                response = Message.from_bytes(data)
+
+        
+        
+        
+        
         for answer in response.answers:
             print("****")
             if answer.type_ == Type.A:
