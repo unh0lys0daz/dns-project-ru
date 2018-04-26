@@ -24,11 +24,11 @@ def resolve():
     args = parser.parse_args()
 
     resolver = Resolver(args.timeout, args.caching, args.ttl, True)
-    thing = resolver.gethostbyname(args.hostname)
+    (hostname, aliaslist, ipaddrlist) = resolver.gethostbyname(args.hostname)
 
-    #print(hostname)
-    #print(aliaslist)
-    #print(ipaddrlist)
+    print(hostname)
+    print(aliaslist)
+    print(ipaddrlist)
 
 
 if __name__ == "__main__":

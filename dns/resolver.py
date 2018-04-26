@@ -34,8 +34,8 @@ class Resolver:
 
     def getnsaddr(self, nsname, additionals):
         for rr in additionals:
-            print(rr.name + " " + nsname)
-            if rr.name == nsname and rr.type_ == Type.A:
+            print(str(rr.name) + " " + str(nsname))
+            if str(rr.name) == str(nsname) and rr.type_ == Type.A:
                 return rr.rdata.address
         return None
 
@@ -81,7 +81,7 @@ class Resolver:
         header.opcode = 0
         header.rd = 1
         query = Message(header, [question])
-        sock.sendto(query.to_bytes(), (dnsserv, 53))
+        sock.sendto(query.to_bytes(), (str(dnsserv), 53))
 
         # Receive response
         data = sock.recv(2048)
@@ -101,7 +101,7 @@ class Resolver:
                     ipaddrlist.append(answer.rdata.address)
                 if answer.type_ == Type.CNAME:
                     aliaslist.append(answer.rdata.cname)
-                if answer.type == Type.NS:
+                if answer.type_ == Type.NS:
                     dnslist.append(answer.rdata.nsdname)
             if ipaddrlist:
                 return hostname, aliaslist, ipaddrlist
@@ -144,30 +144,3 @@ class Resolver:
         
         
         
-        for answer in response.answers:
-            print("****")
-            if answer.type_ == Type.A:
-                print("found A: " + str(answer.name) + " " + answer.rdata.address)
-                ipaddrlist.append(answer.rdata.address)
-            if answer.type_ == Type.CNAME:
-                print("found CNAME: " + str(answer.rdata.cname))
-                aliaslist.append(str(answer.rdata.cname))
-            if answer.type == Type.NS:
-                print("found NS: " + str(answer.rdata.nsdname))
-                dnslist.append(str(answer.rdata.nsdname))
-
-        if ipaddrlist:
-            return hostname, aliaslist, ipaddrlist
-        if aliaslist:
-            return self.gethostbyname(aliaslist[0], dsnserv)
-        if dnslist:
-           for ns in dnslist:
-               for answer in response.answers:
-                   if answer.name == ns and answer.type_ == Type.A:
-                       dnsserv = answer.rdata.address
-               (hostn, aliasl, ipaddrl) = self.gethostbyname(hostname, dnsserv)
-               if ipaddrl:
-                   return hostn, aliasl, ipaddrl
-               if aliasl:
-                   return self.gethostbyname(hostn, dnsserv)
-        return None, None, None
