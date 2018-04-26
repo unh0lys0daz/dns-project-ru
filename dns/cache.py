@@ -43,7 +43,8 @@ class RecordCache:
         for record in self.records:
             print("UGH")
             if str(dname) == str(record.name) and (type_ == record.type_ or type_ == Type.ANY) and class_ == record.class_:
-                found.append(record)
+                if record not in found:
+                    found.append(record)
         return found
 
     def add_record(self, record):
