@@ -23,12 +23,12 @@ def resolve():
                         help="TTL value of cached entries (if > 0)")
     args = parser.parse_args()
 
-    resolver = Resolver(args.timeout, args.caching, args.ttl)
-    hostname, aliaslist, ipaddrlist = resolver.gethostbyname(args.hostname)
+    resolver = Resolver(args.timeout, args.caching, args.ttl, True)
+    thing = resolver.gethostbyname(args.hostname)
 
-    print(hostname)
-    print(aliaslist)
-    print(ipaddrlist)
+    #print(hostname)
+    #print(aliaslist)
+    #print(ipaddrlist)
 
 
 if __name__ == "__main__":

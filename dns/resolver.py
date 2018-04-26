@@ -72,23 +72,30 @@ class Resolver:
         header = Header(9001, 0, 1, 0, 0, 0)
         header.qr = 0
         header.opcode = 0
-        header.rd = 1
+        header.rd = 0
         query = Message(header, [question])
         sock.sendto(query.to_bytes(), (dnsserv, 53))
 
         # Receive response
-        data = sock.recv(512)
+        data = sock.recv(2048)
         response = Message.from_bytes(data)
+        print("Number of answers: " +str(len(response.answers)))
+        print("Number of authorities: " + str(len(response.authorities)))
+        print("Number of additionals: " + str(len(response.additionals)))
         # Get data
         aliaslist = cnames
         ipaddrlist = []
         dnslist = []
         for answer in response.answers:
-            if answer.name == hostname and answer.type_ == Type.A:
+            print("****")
+            if answer.type_ == Type.A:
+                print("found A: " + str(answer.name) + " " + answer.rdata.address)
                 ipaddrlist.append(answer.rdata.address)
             if answer.type_ == Type.CNAME:
+                print("found CNAME: " + str(answer.rdata.cname))
                 aliaslist.append(str(answer.rdata.cname))
             if answer.type == Type.NS:
+                print("found NS: " + str(answer.rdata.nsdname))
                 dnslist.append(str(answer.rdata.nsdname))
 
         if ipaddrlist:
@@ -105,4 +112,4 @@ class Resolver:
                    return hostn, aliasl, ipaddrl
                if aliasl:
                    return self.gethostbyname(hostn, dnsserv)
-
+        return None, None, None

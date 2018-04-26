@@ -40,10 +40,8 @@ class RecordCache:
         found = []
         self.read_cache_file()
         for record in self.records:
-            if dname == record["name"] &&
-            (type_ == record["type"] || type_ == Type.ANY) &&
-            class_ == record["class"]
-            found = found + record
+            if dname == record["name"] and (type_ == record["type"] or type_ == Type.ANY) and class_ == record["class"]:
+                found = found + record
         return found
 
     def add_record(self, record):
