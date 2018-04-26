@@ -128,7 +128,7 @@ class Resolver:
             for authority in response.authorities:
                 if authority.type_ != Type.NS:
                     pass
-                dnslist.append(answer.rdata.nsdname)
+                dnslist.append(authority.rdata.nsdname)
             while dnslist:
                 nsname = dnslist.pop()
                 maybe_next_dnsserv = self.getnsaddr(nsname, response.additionals)
