@@ -7,7 +7,6 @@ a method for converting Enum values to strings. See sections 3.2.2 and 3.2.3 of
 RFC 1035 for more information.
 """
 
-
 from enum import IntEnum
 
 

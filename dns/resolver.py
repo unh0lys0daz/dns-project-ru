@@ -61,13 +61,7 @@ class Resolver:
             if ipaddrlist:
                 return hostname, cnames, ipaddrlist
             elif cnames:
-                for cname in cnames:
-                    (host, aliases, ipaddrl) = self.gethostbyname(cname, dnsserv)
-                    if ipaddrl:
-                        return (host, aliases, ipaddrl)
-                    elif aliases:
-                        cnames = cnames + aliases
-        
+                return self.gethostbyname(cnames[0], dnsserv)
         
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -93,22 +87,22 @@ class Resolver:
             if answer.name == hostname and answer.type_ == Type.A:
                 ipaddrlist.append(answer.rdata.address)
             if answer.type_ == Type.CNAME:
-                aliaslist.append(hostname)
-                hostname = str(answer.rdata.cname)
+                aliaslist.append(str(answer.rdata.cname))
             if answer.type == Type.NS:
-                dnslist = dnslist + answer.rdata.nsdname
+                dnslist.append(str(answer.rdata.nsdname))
 
         if ipaddrlist:
             return hostname, aliaslist, ipaddrlist
         if aliaslist:
-            for name in aliaslist:
-                (host, aliases, ipaddrl) = self.gethostbyname(cname, dnsserv)
-
-                if ipaddrl:
-                    return (host, aliases, ipaddrl)
-                elif aliases:
-                    aliaslist = aliaslist + aliases
-       if dnslist:
+            return self.gethostbyname(aliaslist[0], dsnserv)
+        if dnslist:
            for ns in dnslist:
-               self.gethostbyname(
+               for answer in response.answers:
+                   if answer.name == ns and answer.type_ == Type.A:
+                       dnsserv = answer.rdata.address
+               (hostn, aliasl, ipaddrl) = self.gethostbyname(hostname, dnsserv)
+               if ipaddrl:
+                   return hostn, aliasl, ipaddrl
+               if aliasl:
+                   return self.gethostbyname(hostn, dnsserv)
 
