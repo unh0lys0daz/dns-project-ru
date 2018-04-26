@@ -1,0 +1,83 @@
+[
+  {
+    "name": "thalia.nu.",
+    "type": "A",
+    "class": "IN",
+    "ttl": 300,
+    "rdata": {
+      "address": "131.174.41.19"
+    }
+  },
+  {
+    "name": "thalia.nu.",
+    "type": "A",
+    "class": "IN",
+    "ttl": 300,
+    "rdata": {
+      "address": "131.174.41.19"
+    }
+  },
+  {
+    "name": "thalia.nu.",
+    "type": "A",
+    "class": "IN",
+    "ttl": 300,
+    "rdata": {
+      "address": "131.174.41.19"
+    }
+  },
+  {
+    "name": "thalia.nu.",
+    "type": "A",
+    "class": "IN",
+    "ttl": 300,
+    "rdata": {
+      "address": "131.174.41.19"
+    }
+  },
+  {
+    "name": "thalia.nu.",
+    "type": "A",
+    "class": "IN",
+    "ttl": 300,
+    "rdata": {
+      "address": "131.174.41.19"
+    }
+  },
+  {
+    "name": "thalia.nu.",
+    "type": "A",
+    "class": "IN",
+    "ttl": 300,
+    "rdata": {
+      "address": "131.174.41.19"
+    }
+  },
+  {
+    "name": "thalia.nu.",
+    "type": "A",
+    "class": "IN",
+    "ttl": 300,
+    "rdata": {
+      "address": "131.174.41.19"
+    }
+  },
+  {
+    "name": "thalia.nu.",
+    "type": "A",
+    "class": "IN",
+    "ttl": 300,
+    "rdata": {
+      "address": "131.174.41.19"
+    }
+  },
+  {
+    "name": "thalia.nu.",
+    "type": "A",
+    "class": "IN",
+    "ttl": 300,
+    "rdata": {
+      "address": "131.174.41.19"
+    }
+  }
+]

@@ -12,6 +12,7 @@ It is highly recommended to use these.
 import json
 
 from dns.resource import ResourceRecord
+from dns.types import Type
 
 
 class RecordCache:
@@ -40,8 +41,9 @@ class RecordCache:
         found = []
         self.read_cache_file()
         for record in self.records:
-            if dname == record["name"] and (type_ == record["type"] or type_ == Type.ANY) and class_ == record["class"]:
-                found = found + record
+            print("UGH")
+            if str(dname) == str(record.name) and (type_ == record.type_ or type_ == Type.ANY) and class_ == record.class_:
+                found.append(record)
         return found
 
     def add_record(self, record):
@@ -51,7 +53,7 @@ class RecordCache:
             record (ResourceRecord): the record added to the cache
         """
         self.read_cache_file()
-        self.records = self.records + record
+        self.records.append(record)
         self.write_cache_file()
 
     def read_cache_file(self):
@@ -66,6 +68,7 @@ class RecordCache:
 
     def write_cache_file(self):
         """Write the cache file to disk"""
+        print("We're caching")
         dcts = [record.to_dict() for record in self.records]
         try:
             with open("cache", "w") as file_:

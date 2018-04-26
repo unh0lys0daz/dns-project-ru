@@ -55,16 +55,16 @@ class Resolver:
         cnames = []
         temp = []
         if(self.caching):
-            rcache = RecordCache(ttl)
+            rcache = RecordCache(self.ttl)
             rcord = rcache.lookup(hostname, Type.ANY, Class.IN)
             if(rcord):
                 for rec in rcord:
                     if rec.type_ == Type.A:
                         arec = rec.rdata
-                        ipaddrlist = ipaddrlist + arec.address
+                        ipaddrlist.append(arec.address)
                     elif rec.type_ == Type.CNAME:
                         crec = rec.rdata
-                        cnames = cnames + crec.cname
+                        cnames.append(crec.cname)
             if ipaddrlist:
                 return hostname, cnames, ipaddrlist
             elif cnames:
@@ -98,6 +98,9 @@ class Resolver:
         while response.answers:
             for answer in response.answers:
                 if answer.type_ == Type.A:
+                    print("found A RR")
+                    if(self.caching):
+                        rcache.add_record(answer)
                     ipaddrlist.append(answer.rdata.address)
                 if answer.type_ == Type.CNAME:
                     aliaslist.append(answer.rdata.cname)
