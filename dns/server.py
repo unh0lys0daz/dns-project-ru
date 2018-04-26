@@ -11,6 +11,7 @@ from threading import Thread
 from dns.message import Message
 from dns.zone import Zone
 from dns.zone import Catalog
+from dns.resolver import Resolver
 
 class RequestHandler(Thread):
     """A handler for requests to the DNS server"""
@@ -29,6 +30,11 @@ class RequestHandler(Thread):
         recursion = header.rd() != 0
         questions = msg.questions
         for question in questions:
+            if recursion:
+                resolver = Resolver(100, False, 0, False)
+                (hostname, aliaslist, ipaddrlist) = resolver.gethostbyname(question.qname)
+        
+            
 
 
 
@@ -61,7 +67,7 @@ class Server:
         while not self.done:
             data, addr = sock.recvfrom(65000) 
             handler = RequestHandler(data, addr, zone)
-            handler.run()
+            handler.start()
 
             
 
