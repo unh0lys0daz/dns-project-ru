@@ -117,7 +117,7 @@ class Resolver:
                 if maybe_dnsserv:
                     dnsserv = maybe_dnsserv
                 else:
-                    break
+                    pass
                 sock.sendto(query.to_bytes(), (dnsserv, 53))
                 data = sock.recv(2048)
                 response = Message.from_bytes(data)
@@ -131,7 +131,11 @@ class Resolver:
                 dnslist.append(answer.rdata.nsdname)
             while dnslist:
                 nsname = dnslist.pop()
-                next_dnsserv = self.getnsaddr(nsname, response.additionals)
+                maybe_next_dnsserv = self.getnsaddr(nsname, response.additionals)
+                if maybe_next_dnsserv:
+                    next_dns_serv = maybe_next_dnsserv
+                else:
+                    pass
                 (hname, aliasl, ipaddrl) = self.gethostbyname(hostname, nsname)
                 if ipaddrl:
                     return hname, aliasl, ipaddrl
