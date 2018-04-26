@@ -124,6 +124,18 @@ class Resolver:
             else:
                 break
 
+        if response.authorities:
+            for authority in response.authorities:
+                if authority.type_ != Type.NS:
+                    pass
+                dnslist.append(answer.rdata.nsdname)
+            while dnslist:
+                nsname = dnslist.pop()
+                next_dnsserv = self.getnsaddr(nsname, response.additionals)
+                (hname, aliasl, ipaddrl) = self.gethostbyname(hostname, nsname)
+                if ipaddrl:
+                    return hname, aliasl, ipaddrl
+
         
         
         
