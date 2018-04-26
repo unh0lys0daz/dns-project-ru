@@ -32,6 +32,13 @@ class Resolver:
         self.ttl = ttl
         self.rd = rd
 
+    def getnsaddr(self, nsname, additionals):
+        for rr in additionals:
+            print(rr.name + " " + nsname)
+            if rr.name == nsname and rr.type_ == Type.A:
+                return rr.rdata.address
+        return None
+
     def gethostbyname(self, hostname, dnsserv='192.112.36.4'):
         """Translate a host name to IPv4 address.
 
@@ -105,10 +112,17 @@ class Resolver:
                 data = sock.recv(2048)
                 response = Message.from_bytes(data)
             elif dnslist:
-                dnsserv = dnslist.pop()
+                nsname = dnslist.pop()
+                maybe_dnsserv = self.getnsaddr(nsname, response.additionals)
+                if maybe_dnsserv:
+                    dnsserv = maybe_dnsserv
+                else:
+                    break
                 sock.sendto(query.to_bytes(), (dnsserv, 53))
                 data = sock.recv(2048)
                 response = Message.from_bytes(data)
+            else:
+                break
 
         
         
