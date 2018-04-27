@@ -16,12 +16,13 @@ from dns.resolver import Resolver
 class RequestHandler(Thread):
     """A handler for requests to the DNS server"""
 
-    def __init__(self, data, addr):
+    def __init__(self, data, addr, sock):
         """Initialize the handler thread"""
         super().__init__()
         self.daemon = True
         self.data = data
         self.addr = addr
+        self.sock = sock
 
     def run(self):
         """ Run the handler thread"""
@@ -30,9 +31,40 @@ class RequestHandler(Thread):
         recursion = header.rd() != 0
         questions = msg.questions
         for question in questions:
+            #FIXME if not in zone blabla
             if recursion:
-                resolver = Resolver(100, False, 0, False)
+                answers = []
+                resolver = Resolver(100, False, 0, True)
                 (hostname, aliaslist, ipaddrlist) = resolver.gethostbyname(question.qname)
+                header_response = Header(9001, 0, 1, len(aliaslist) + len(ipaddrlist), 0, 0)
+                header_response.qr(1)
+                header_response.opcode(1)
+                header_response.aa(0)
+                header_respones.tc(0)
+                header_response.rd(0)
+                header_response.ra(1)
+                header_response.z(0)
+                header_respones.rcode(0)
+
+                for addr in ipaddrlist:
+                    answers.append(ResourceRecord.from_dict(
+                        { "name" : str(hostname) ,
+                          "type" : str(Type.A) ,
+                          "class": str(Class.IN) ,
+                          "ttl"  : "0",
+                          "rdata": { "address" : addr } } )
+                for alias in aliaslist:
+                    answers.append(ResourceRecord.from_dict(
+                        { "name" : str(hostname) ,
+                          "type" : str(Type.CNAME) ,
+                          "class": str(Class.IN) ,
+                          "ttl"  : "0",
+                          "rdata": { "cname" : str(alias) } } )
+                response = Message(header_response, questions, answers)
+                self.sock.sendto(response.to_bytes, self.addr)
+
+
+
         
             
 
@@ -66,7 +98,7 @@ class Server:
         sock.listen(10)
         while not self.done:
             data, addr = sock.recvfrom(65000) 
-            handler = RequestHandler(data, addr, zone)
+            handler = RequestHandler(data, addr, zone, sock)
             handler.start()
 
             
