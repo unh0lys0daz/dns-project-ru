@@ -75,7 +75,7 @@ class Resolver:
         sock.settimeout(self.timeout)
 
         # Create and send query
-        question = Question(Name(hostname), Type.A, Class.IN)
+        question = Question(Name(str(hostname)), Type.A, Class.IN)
         header = Header(9001, 0, 1, 0, 0, 0)
         header.qr = 0
         header.opcode = 0

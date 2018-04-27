@@ -6,12 +6,19 @@ This module provides a recursive DNS server. You will have to implement this
 server using the algorithm described in section 4.3.2 of RFC 1034.
 """
 
-
+import socket
 from threading import Thread
 from dns.message import Message
+from dns.message import Header
+from dns.message import Question
 from dns.zone import Zone
 from dns.zone import Catalog
 from dns.resolver import Resolver
+from dns.classes import Class
+from dns.types import Type
+from dns.resource import ResourceRecord
+from dns.resource import ARecordData
+from dns.resource import CNAMERecordData
 
 class RequestHandler(Thread):
     """A handler for requests to the DNS server"""
@@ -25,7 +32,8 @@ class RequestHandler(Thread):
         self.sock = sock
         self.zone = zone
 
-    def getdomains(hname):
+    def getdomains(self, hname):
+        print(hname)
         domains = []
         parts = hname.split('.')
         for i in range(len(parts)):
@@ -38,7 +46,7 @@ class RequestHandler(Thread):
         """ Run the handler thread"""
         msg = Message.from_bytes(self.data)
         header = msg.header
-        recursion = header.rd() != 0
+        recursion = header.rd != 0
         questions = msg.questions
 
         answers = []
@@ -47,67 +55,66 @@ class RequestHandler(Thread):
         for question in questions:
             qname = question.qname
             qtype = question.qtype
-            if qclass != Class.IN:
+            if question.qclass != Class.IN:
                 pass
-            domains = getdomains(str(qname))
+            domains = self.getdomains(str(qname))
             for domain in domains:
-                if not self.zone[domain]:
-                    pass
-                for rr in self.zone[domain]:
+                if not self.zone.records.get(domain, False):
+                    continue
+                for rr in self.zone.records[domain]:
                     if (rr.type_ == Type.A or rr.type_ == Type.CNAME) and domain == str(qname):
                         answers.append(rr)
                     if rr.type_ == Type.NS:
                         authorative.append(rr)
-                        for rec in self.zone[str(rr.rdata.nsdname)]:
+                        for rec in self.zone.records[str(rr.rdata.nsdname)]:
                             if rec not in additional:
                                 if rec.qtype == Type.A:
                                     additional.append(rec)
             if authorative or answers:
                 header_response = Header(9001, 0, 1, len(answers), len(authorative), len(additionals))
-                header_response.qr(1)
+                header_response.qr = True
                 header_response.opcode(1)
-                header_response.aa(0)
-                header_respones.tc(0)
-                header_response.rd(0)
-                header_response.ra(1)
-                header_response.z(0)
-                header_respones.rcode(0)
+                header_response.aa(False)
+                header_respones.tc(False)
+                header_response.rd(False)
+                header_response.ra(True)
+                header_response.z(False)
+                header_respones.rcode(False)
 
                 respons = Message(header_response, [question], answers, authorities, additionals)
 
                 self.sock.sendto(respons.to_bytes(), self.addr)
                 break
 
-            if recursion and qtype = Type.A or qtype = Type.CNAME:
+            if recursion and (qtype == Type.A or qtype == Type.CNAME):
                 answers = []
                 resolver = Resolver(100, False, 0, True)
                 (hostname, aliaslist, ipaddrlist) = resolver.gethostbyname(question.qname)
                 header_response = Header(9001, 0, 1, len(aliaslist) + len(ipaddrlist), 0, 0)
-                header_response.qr(1)
-                header_response.opcode(1)
-                header_response.aa(0)
-                header_respones.tc(0)
-                header_response.rd(0)
-                header_response.ra(1)
-                header_response.z(0)
-                header_respones.rcode(0)
+                header_response.qr = 1
+                header_response.opcode = 1
+                header_response.aa = 0
+                header_response.tc = 0
+                header_response.rd = 0
+                header_response.ra = 1
+                header_response.rcode = 0
 
                 for addr in ipaddrlist:
                     answers.append(ResourceRecord.from_dict(
                         { "name" : str(hostname) ,
                           "type" : str(Type.A) ,
                           "class": str(Class.IN) ,
-                          "ttl"  : "0",
-                          "rdata": { "address" : addr } } )
+                          "ttl"  : 0,
+                          "rdata": { "address" : str(addr) } } ))
                 for alias in aliaslist:
                     answers.append(ResourceRecord.from_dict(
                         { "name" : str(hostname) ,
                           "type" : str(Type.CNAME) ,
                           "class": str(Class.IN) ,
-                          "ttl"  : "0",
-                          "rdata": { "cname" : str(alias) } } )
+                          "ttl"  : 0,
+                          "rdata": { "cname" : str(alias) } } ))
                 response = Message(header_response, questions, answers)
-                self.sock.sendto(response.to_bytes, self.addr)
+                self.sock.sendto(response.to_bytes(), self.addr)
                 break
 
 
@@ -141,7 +148,6 @@ class Server:
         zone.read_master_file('zone')
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('127.0.0.1',self.port))
-        sock.listen(10)
         while not self.done:
             data, addr = sock.recvfrom(65000) 
             handler = RequestHandler(data, addr, zone, sock)
