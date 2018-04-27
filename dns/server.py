@@ -16,13 +16,23 @@ from dns.resolver import Resolver
 class RequestHandler(Thread):
     """A handler for requests to the DNS server"""
 
-    def __init__(self, data, addr, sock):
+    def __init__(self, data, addr, zone, sock):
         """Initialize the handler thread"""
         super().__init__()
         self.daemon = True
         self.data = data
         self.addr = addr
         self.sock = sock
+        self.zone = zone
+
+    def getdomains(hname):
+        domains = []
+        parts = hname.split('.')
+        for i in range(len(parts)):
+            domains.append('.'.join(parts[i:]))
+        if domains:
+            domains[-1] = '.'
+        return domains
 
     def run(self):
         """ Run the handler thread"""
@@ -30,9 +40,45 @@ class RequestHandler(Thread):
         header = msg.header
         recursion = header.rd() != 0
         questions = msg.questions
+
+        answers = []
+        authorative = []
+        additional = []
         for question in questions:
-            #FIXME if not in zone blabla
-            if recursion:
+            qname = question.qname
+            qtype = question.qtype
+            if qclass != Class.IN:
+                pass
+            domains = getdomains(str(qname))
+            for domain in domains:
+                if not self.zone[domain]:
+                    pass
+                for rr in self.zone[domain]:
+                    if (rr.type_ == Type.A or rr.type_ == Type.CNAME) and domain == str(qname):
+                        answers.append(rr)
+                    if rr.type_ == Type.NS:
+                        authorative.append(rr)
+                        for rec in self.zone[str(rr.rdata.nsdname)]:
+                            if rec not in additional:
+                                if rec.qtype == Type.A:
+                                    additional.append(rec)
+            if authorative or answers:
+                header_response = Header(9001, 0, 1, len(answers), len(authorative), len(additionals))
+                header_response.qr(1)
+                header_response.opcode(1)
+                header_response.aa(0)
+                header_respones.tc(0)
+                header_response.rd(0)
+                header_response.ra(1)
+                header_response.z(0)
+                header_respones.rcode(0)
+
+                respons = Message(header_response, [question], answers, authorities, additionals)
+
+                self.sock.sendto(respons.to_bytes(), self.addr)
+                break
+
+            if recursion and qtype = Type.A or qtype = Type.CNAME:
                 answers = []
                 resolver = Resolver(100, False, 0, True)
                 (hostname, aliaslist, ipaddrlist) = resolver.gethostbyname(question.qname)
@@ -62,7 +108,7 @@ class RequestHandler(Thread):
                           "rdata": { "cname" : str(alias) } } )
                 response = Message(header_response, questions, answers)
                 self.sock.sendto(response.to_bytes, self.addr)
-
+                break
 
 
         
