@@ -1,0 +1,22 @@
+Welke formats ondersteunen we:
+<blank>[<comment>]
+<domain-name><rr>[<comment>]
+<blank><rr>[<comment>]
+
+Hoe kan rr eruit zien:
+[<TTL>][<Class>]<Type><rdata>
+[<Class>][<TTL>]<Type><rdata>
+TTL en Class zijn optioneel, TTL is gewoon een int.
+Mochten TTL/Class niet gegeven zijn, defaulten die naar de laatste expliciet gegeven waarden??????
+
+Hoe kan <domain-name> eruit zien:
+Gescheiden door punten
+Eindigt op een punt
+
+Als een master file gebruikt wordt om een zone te laden en er een error in het master bestand staat, dient de hele operatie gekilld te worden.
+Andere checks waaraan het bestand moet voldoen;
+1. Alle RR types moeten hetzelfde zijn
+2. Als delegations present zijn, moet de 'glue information' ook present zijn
+3. Alle informatie buiten auth nodes behoort glue information te zijn.
+
+Master file wordt alleen aan het begin geladen, nooit geupdate.

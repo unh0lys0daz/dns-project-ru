@@ -51,4 +51,23 @@ class Zone:
         Args:
             filename (str): the filename of the master file
         """
-        pass
+        with open("zone") as f:
+            content = f.readlines()
+        content = [x.strip() for x in content] #Remove empty lines
+
+        contentcleaned = [x for x in content if not (x[0] == ';') and not  "AAAA" in x] #Remove AAAA types and comments
+
+        for y in contentcleaned:
+            #y[0] = Either '.' or Domain Name
+            #y[1] = First index in [<Class>][<TTL]<type><rdata> or [<TTL>][<Class]<type><rdata>
+            #y[2] = etc
+            #y[3] = etc
+            add_node(self, y[0], ResourceRecord.from_dict(
+                                 { "name" : str(y[0]) ,
+                                   "type" : str(y[2]) ,
+                                   "class": str(Class.IN) ,
+                                   "ttl"  : str(y[1]),
+                                   "rdata": { "address" : y[3] } } ))
+
+
+
